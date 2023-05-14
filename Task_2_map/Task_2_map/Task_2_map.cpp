@@ -6,13 +6,9 @@
 
 using namespace std;
 
-void sum_vec_1th(std::vector<int> vec_1, vector<int> vec_2, int st, int fin) {
-	int temp_sum = 0;
+void sum_vec_1th(vector<int>& vec_1, vector<int>& vec_2, int st, int fin, long long& temp_sum) {
 	for (int i = st; i < fin; i++) {
-		vec_1[i] += vec_2[i];
-	}
-	for (int i = 0; i < vec_1.size(); i++) {
-		temp_sum += vec_1[i];
+		temp_sum += (vec_1[i] + vec_2[i]);
 	}
 }
 
@@ -29,10 +25,11 @@ int main() {
 	vector<int> vec_4(vec_size[3]);
 	vector<thread> vec_th;
 	vector<chrono::duration<double, milli>> vec_el_sec;
-	int temp = 0;
+	vector<int> vec_temp_sum;
+	long long temp_sum = 0;
 
 	mt19937 gen;
-	uniform_int_distribution<int> distrib(1, 3000);
+	uniform_int_distribution<int> distrib(1, 300);
 	auto rand_num([=]() mutable {return distrib(gen); });
 
 	generate(vec_1.begin(), vec_1.end(), rand_num);
@@ -51,14 +48,17 @@ int main() {
 	}
 	
 	for (int i = 0; i < vec_size.size(); i++) {
+		temp_sum = 0;
 		auto start = chrono::high_resolution_clock::now();
-		vec_th.push_back(thread(sum_vec_1th, ref(vec_all_1[i]), ref(vec_all_2[i]), 0, vec_size[i]));
+		vec_th.push_back(thread(sum_vec_1th, ref(vec_all_1[i]), ref(vec_all_2[i]),
+			0, vec_size[i], ref(temp_sum)));
 		auto end = chrono::high_resolution_clock::now();
 		chrono::duration<double, milli> el_sec = end - start;
 		vec_el_sec.push_back(el_sec);
 	}
 	for (auto& st : vec_th) {
 		st.join();
+		vec_temp_sum.push_back(temp_sum);
 	}
 	std::cout << "\n" << "1 потоков: ";
 	for (int i = 0; i < vec_el_sec.size(); i++) {
@@ -67,12 +67,15 @@ int main() {
 
 	vec_el_sec.clear();
 	vec_th.clear();
+	vec_temp_sum.clear();
 	for (int i = 0; i < vec_size.size(); i++) {
 		int st = 0,
 			fin = vec_size[i] / 2;
+		temp_sum = 0;
 		auto start = chrono::high_resolution_clock::now();
 		for (int j = 0; j < 2; j++) {
-			vec_th.push_back(thread(sum_vec_1th, ref(vec_all_1[i]), ref(vec_all_2[i]), st, fin));
+			vec_th.push_back(thread(sum_vec_1th, ref(vec_all_1[i]), ref(vec_all_2[i]), st, fin, 
+				ref(temp_sum)));
 			st += (vec_size[i] / 2);
 			fin += (vec_size[i] / 2);
 		}
@@ -82,6 +85,7 @@ int main() {
 	}
 	for (auto& st : vec_th) {
 		st.join();
+		vec_temp_sum.push_back(temp_sum);
 	}
 	std::cout << "\n" << "2 потоков: ";
 	for (int i = 0; i < vec_el_sec.size(); i++) {
@@ -90,12 +94,15 @@ int main() {
 	
 	vec_el_sec.clear();
 	vec_th.clear();
+	vec_temp_sum.clear();
 	for (int i = 0; i < vec_size.size(); i++) {
 		int st = 0,
 			fin = vec_size[i] / 4;
+		temp_sum = 0;
 		auto start = chrono::high_resolution_clock::now();
 		for (int j = 0; j < 4; j++) {
-			vec_th.push_back(thread(sum_vec_1th, ref(vec_all_1[i]), ref(vec_all_2[i]), st, fin));
+			vec_th.push_back(thread(sum_vec_1th, ref(vec_all_1[i]), ref(vec_all_2[i]), st, fin,
+				ref(temp_sum)));
 			st += (vec_size[i] / 4);
 			fin += (vec_size[i] / 4);
 		}
@@ -105,6 +112,7 @@ int main() {
 	}
 	for (auto& st : vec_th) {
 		st.join();
+		vec_temp_sum.push_back(temp_sum);
 	}
 	std::cout << "\n" << "4 потоков: ";
 	for (int i = 0; i < vec_el_sec.size(); i++) {
@@ -113,12 +121,15 @@ int main() {
 
 	vec_el_sec.clear();
 	vec_th.clear();
+	vec_temp_sum.clear();
 	for (int i = 0; i < vec_size.size(); i++) {
 		int st = 0,
 			fin = vec_size[i] / 8;
+		temp_sum = 0;
 		auto start = chrono::high_resolution_clock::now();
 		for (int j = 0; j < 8; j++) {
-			vec_th.push_back(thread(sum_vec_1th, ref(vec_all_1[i]), ref(vec_all_2[i]), st, fin));
+			vec_th.push_back(thread(sum_vec_1th, ref(vec_all_1[i]), ref(vec_all_2[i]), st, fin,
+				ref(temp_sum)));
 			st += (vec_size[i] / 8);
 			fin += (vec_size[i] / 8);
 		}
@@ -128,6 +139,7 @@ int main() {
 	}
 	for (auto& st : vec_th) {
 		st.join();
+		vec_temp_sum.push_back(temp_sum);
 	}
 	std::cout << "\n" << "8 потоков: ";
 	for (int i = 0; i < vec_el_sec.size(); i++) {
@@ -136,12 +148,15 @@ int main() {
 
 	vec_el_sec.clear();
 	vec_th.clear();
+	vec_temp_sum.clear();
 	for (int i = 0; i < vec_size.size(); i++) {
 		int st = 0,
 			fin = vec_size[i] / 16;
+		temp_sum = 0;
 		auto start = chrono::high_resolution_clock::now();
 		for (int j = 0; j < 16; j++) {
-			vec_th.push_back(thread(sum_vec_1th, ref(vec_all_1[i]), ref(vec_all_2[i]), st, fin));
+			vec_th.push_back(thread(sum_vec_1th, ref(vec_all_1[i]), ref(vec_all_2[i]), st, fin,
+				ref(temp_sum)));
 			st += (vec_size[i] / 16);
 			fin += (vec_size[i] / 16);
 		}
@@ -151,6 +166,7 @@ int main() {
 	}
 	for (auto& st : vec_th) {
 		st.join();
+		vec_temp_sum.push_back(temp_sum);
 	}
 	std::cout << "\n" << "16 потоков: ";
 	for (int i = 0; i < vec_el_sec.size(); i++) {
